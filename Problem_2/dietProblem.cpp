@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <float.h>
 #include <ilcplex/ilocplex.h>
 using namespace std;
 
@@ -9,26 +8,44 @@ int main() {
 	IloModel dietProblem(env, "Diet Problem");
 	IloCplex cplex(dietProblem);
 
+	// Statement Data:
+	const int n = 6, m = 2;
+	double data[m][n] = {{1, 0, 2, 2, 1, 2}, {0, 1, 3, 1, 3, 2}};
+	double price[n] = {35, 30, 60, 50, 27, 22};
+	double qtd_min[2] = {9, 19};
+
 	// Decision Variables:
-	IloNumVar x1(env), x2(env), x3(env), x4(env), x5(env), x6(env);
+	IloNumVarArray vars(env, n);
+	for (int i = 0; i < n; i++) {
+		vars[i] = IloNumVar(env);
+	}
 
 	// Restrictions:
-    dietProblem.add(1 * x1 + 0 * x2 + 2 * x3 + 2 * x4 + 1 * x5 + 2 * x6 >= 9);
-    dietProblem.add(0 * x1 + 1 * x2 + 3 * x3 + 1 * x4 + 3 * x5 + 2 * x6 >= 19);
+	for (int i = 0; i < m; i++) {
+		IloExpr constraint(env);
+
+		for (int j = 0; j < n; j++) {
+			constraint += data[i][j] * vars[i];
+			dietProblem.add(vars[i] >= 0);
+		}
+
+		dietProblem.add(constraint >= qtd_min[i]);
+	}
 
     // Objective Function:
-	dietProblem.add(IloMinimize(env, 35 * x1 + 30 * x2 + 60 * x3 + 50 * x4 + 
-		27 * x5 + 22 * x6));
+    IloExpr objective(env);
+    for (int i = 0; i < n; i++) {
+		objective += price[i] * vars[i];
+	}
+	dietProblem.add(IloMinimize(env, objective));
 
 	// Get Solution:
     cplex.solve();
     cout << "Objective Function: " << cplex.getObjValue() << endl;
-    cout << "x1: " << cplex.getValue(x1) << endl;
-    cout << "x2: " << cplex.getValue(x2) << endl;
-    cout << "x3: " << cplex.getValue(x3) << endl;
-    cout << "x4: " << cplex.getValue(x4) << endl;
-    cout << "x5: " << cplex.getValue(x5) << endl;
-    cout << "x6: " << cplex.getValue(x6) << endl;
+
+    for (int i = 0; i < n; i++) {
+		cout << "x" << i << ": " << cplex.getValue(vars[i]) << endl;
+	}
 
     // End
     cplex.end();
