@@ -24,7 +24,7 @@ if [ $# -gt 0 ]; then
     fi
 
     # Try to compile the given file
-    if g++ $1 -o $2 -I $include_cplex -I $include_concert -DIL_STD -L $lib_cplex -L $lib_concert $libs ; then
+    if g++ $1 -o $2 -I $include_cplex -I $include_concert -DIL_STD -L $lib_cplex -L $lib_concert $libs -std=c++11 ; then
         echo "Compilation successful!"
     else
         echo "Compilation failed!"
