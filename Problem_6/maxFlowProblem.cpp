@@ -2,9 +2,6 @@
 #include <ilcplex/ilocplex.h>
 using namespace std;
 
-// 2D Matrix of variables
-typedef IloArray<IloNumVarArray> NumVarMatrix;
-
 int main() {
     
     IloEnv env;
@@ -12,13 +9,14 @@ int main() {
     IloCplex cplex(maxFlowProblem);
 
     // Decision Variables:
+    // Sample data (nodes)
     IloNumVar x01(env), x02(env), x03(env);
     IloNumVar x14(env), x15(env);
     IloNumVar x24(env), x25(env), x26(env);
     IloNumVar x35(env), x47(env), x57(env), x67(env);
 
     // Restrictions:
-    // Capacity:
+    // Capacity
     maxFlowProblem.add(x01 <= 3);    maxFlowProblem.add(x02 <= 2);
     maxFlowProblem.add(x03 <= 2);    maxFlowProblem.add(x14 <= 5);
     maxFlowProblem.add(x15 <= 1);    maxFlowProblem.add(x24 <= 1);
@@ -26,13 +24,14 @@ int main() {
     maxFlowProblem.add(x35 <= 1);    maxFlowProblem.add(x47 <= 4);
     maxFlowProblem.add(x57 <= 2);    maxFlowProblem.add(x67 <= 4);
 
-    // Restrictions:
-    // Flow Conservation:
+    // Constraints:
+    // Flow Conservation
     maxFlowProblem.add(x01 == (x14 + x15));          maxFlowProblem.add(x02 == (x24 + x25 + x26));
     maxFlowProblem.add(x03 == x35);                  maxFlowProblem.add((x14 + x24) == x47);
     maxFlowProblem.add((x15 + x25 + x35) == x57);    maxFlowProblem.add(x26 == x67);
 
     // Objective Function:
+    // Maximize the flow starting from node 0
     maxFlowProblem.add(IloMaximize(env, x01 + x02 + x03));
 
     // Get Solution:
