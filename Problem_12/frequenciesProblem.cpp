@@ -38,12 +38,11 @@ int main() {
         frequenciesProblem.add(sum == 1);
     }
 
-    // Restrictions:
-    // Interference:
     for (int i = 0; i < n_antenas; i++) {
-        for (int j = 0; j < m_freqs; j++) {
-            frequenciesProblem.add(freq_ij[i][j] <= frequencies[j]);
-            frequenciesProblem.add(freq_ij[i][j] + freq_ij[j][i] <= 1);
+        for (int j = i + 1; j < n_antenas; j++) {
+            for (int k = 0; k < m_freqs; k++) {
+                frequenciesProblem.add(freq_ij[i][k] + freq_ij[j][k] <= 1);
+            }
         }
     }
 
