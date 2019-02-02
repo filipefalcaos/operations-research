@@ -9,18 +9,21 @@ int main() {
     IloCplex cplex(dietProblem);
 
     // Statement Data:
+    // Data provided by the problem
     const int n = 6, m = 2;
     double data[m][n] = {{1, 0, 2, 2, 1, 2}, {0, 1, 3, 1, 3, 2}};
     double price[n] = {35, 30, 60, 50, 27, 22};
     double qtd_min[2] = {9, 19};
 
     // Decision Variables:
+    // Amount of each ingredient i
     IloNumVarArray vars(env, n);
     for (int i = 0; i < n; i++) {
         vars[i] = IloNumVar(env);
     }
 
-    // Restrictions:
+    // Constraints:
+    // Add restriction for both vitamins
     for (int i = 0; i < m; i++) {
         IloExpr constraint(env);
 
@@ -33,6 +36,7 @@ int main() {
     }
 
     // Objective Function:
+    // Minimize the cost of the resulting compound
     IloExpr objective(env);
     for (int i = 0; i < n; i++) {
         objective += price[i] * vars[i];

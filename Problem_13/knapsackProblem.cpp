@@ -2,9 +2,6 @@
 #include <ilcplex/ilocplex.h>
 using namespace std;
 
-// 2D Matrix of variables
-typedef IloArray<IloNumVarArray> NumVarMatrix;
-
 int main() {
     
     IloEnv env;
@@ -12,10 +9,12 @@ int main() {
     IloCplex cplex(knapsackProblem);
 
     // Statement Data:
+    // Number of items and knapsack weight
     int n;
     double weight;
     scanf("%d %lf", &n, &weight);
     
+    // Values and weights of each item
     double weights[n];
     double values[n];
 
@@ -24,12 +23,14 @@ int main() {
     }
 
     // Decision Variables:
+    // If an item is in the knapsack
     IloBoolVarArray vars(env, n);
     for (int i = 0; i < n; i++) {
         vars[i] = IloBoolVar(env);
     }
 
-    // Restrictions:
+    // Constraints:
+    // The wight of the knapsack cannot be exceeded
     IloExpr sum(env);
     for (int i = 0; i < n; i++) {
         sum += weights[i] * vars[i];
@@ -37,6 +38,7 @@ int main() {
     knapsackProblem.add(sum <= weight);
 
     // Objective Function:
+    // Maximize the value of the itens in the knapsack
     IloExpr objective(env);
     for (int i = 0; i < n; i++) {
         objective += values[i] * vars[i];

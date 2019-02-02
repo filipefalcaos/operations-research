@@ -9,6 +9,7 @@ int main() {
     IloCplex cplex(paintProblem);
 
     // Statement Data:
+    // Data provided by the problem
     const int n = 2, m = 4;
     double proportions[m] = {0.25, 0.5, 0.2, 0.5};
     double solutions[m] = {0.3, 0.6, 0.7, 0.4};
@@ -17,6 +18,7 @@ int main() {
     double cost_a = 1.5, cost_b = 1.0;
 
     // Decision Variables:
+    // The amount of each component in both SR and SN paints
     IloNumVarArray sr_paint(env, m);
     IloNumVarArray sn_paint(env, m);
     
@@ -25,21 +27,21 @@ int main() {
         sn_paint[i] = IloNumVar(env);
     }
 
-    // Restrictions:
+    // Constraints:
     // Non-negativity:
-    paintProblem.add(sr_paint[0] >= 0 && sr_paint[1] >= 0 && sr_paint[2] >= 0 
-        && sr_paint[3] >= 0);
-    paintProblem.add(sn_paint[0] >= 0 && sn_paint[1] >= 0 && sn_paint[2] >= 0 
-        && sn_paint[3] >= 0);
+    for (int i = 0; i < m; i++) {
+        paintProblem.add(sr_paint[i] >= 0);
+        paintProblem.add(sn_paint[i] >= 0);
+    }
     
-    // Restrictions:
+    // Constraints:
     // Production:
     paintProblem.add(sr_paint[0] + sr_paint[1] + sr_paint[2] + sr_paint[3] 
         == liters_sr);
     paintProblem.add(sn_paint[0] + sn_paint[1] + sn_paint[2] + sn_paint[3] 
         == liters_sn);
 
-    // Restrictions:
+    // Constraints:
     // Proportion:
     paintProblem.add(((sr_paint[2] + sr_paint[0] * solutions[0] + sr_paint[1] 
         * solutions[2]) / 1000) >= proportions[0]);
@@ -51,6 +53,7 @@ int main() {
         * solutions[3]) / 1000) >= proportions[1]);
 
     // Objective Function:
+    // Minimize the cost of production for both SR and SN paints
     paintProblem.add(IloMinimize(env, (sr_paint[0] * cost_a + sr_paint[1] * cost_b + 
         sr_paint[2] * cost_sec + sr_paint[3] * cost_cor) + (sn_paint[0] * cost_a + 
         sn_paint[1] * cost_b + sn_paint[2] * cost_sec + sn_paint[3] * cost_cor)));

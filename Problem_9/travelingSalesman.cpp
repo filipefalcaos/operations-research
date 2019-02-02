@@ -12,10 +12,11 @@ int main() {
     IloCplex cplex(travelingSalesman);
 
     // Statement Data:
+    // The number of cities (nodes) in the graph
     int n;
     scanf("%d", &n);
 
-    // Generate random distances between n cities
+    // Generate random distances between n cities (nodes)
     double distance[n][n];
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -29,6 +30,7 @@ int main() {
     }
 
     // Decision Variables:
+    // If there is a path between cities i and j
     IloNumVarArray s(env, n);
     BoolVarMatrix vars(env, n);
     
@@ -41,8 +43,8 @@ int main() {
         }
     }
 
-    // Restrictions:
-    // Unique output:
+    // Constraints:
+    // Unique output
     for (int i = 0; i < n; i++) {
         IloExpr sum(env);
 
@@ -55,8 +57,8 @@ int main() {
         travelingSalesman.add(sum == 1);
     }
 
-    // Restrictions:
-    // Unique input:
+    // Constraints:
+    // Unique input
     for (int j = 0; j < n; j++) {
         IloExpr sum2(env);
 
@@ -69,8 +71,8 @@ int main() {
         travelingSalesman.add(sum2 == 1);
     }
 
-    // Restrictions:
-    // Remove subcycles:
+    // Constraints:
+    // Remove subcycles
     for (int i = 1; i < n; i++) {
         for (int j = 1; j < n; j++) {
             if (i == j) {} else {
@@ -82,6 +84,7 @@ int main() {
     }
 
     // Objective Function:
+    // Minimize the cost to go through each city
     IloExpr objective(env);
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {

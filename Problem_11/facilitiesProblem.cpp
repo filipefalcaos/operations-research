@@ -9,60 +9,67 @@ int main() {
     IloCplex cplex(facilitiesProblem);
 
     // Statement Data:
+    // Number of deposits and clients
     int deposits, clients; 
     scanf("%d %d", &deposits, &clients);
     
-    double installationCosts[deposits];
-    double serviceCosts[deposits][clients];
+    // Costs
+    double costs_1[deposits];
+    double costs_2[deposits][clients];
 
     for (int i = 0; i < deposits; i ++) {
-        scanf("%lf", &installationCosts[i]);
+        scanf("%lf", &costs_1[i]);
     }
 
     for (int i = 0; i < deposits; i++) {
         for (int j = 0; j < clients; j++) {
-            scanf("%lf", &serviceCosts[i][j]);
+            scanf("%lf", &costs_2[i][j]);
         }
     }
 
     // Decision Variables:
-    IloBoolVarArray installDeposits(env, deposits);
-    IloArray<IloBoolVarArray> serveClient(env, deposits);
+    // xi: If a deposit i will be will be built
+    // yi: If a deposit i answers to a client j
+    IloBoolVarArray xi(env, deposits);
+    IloArray<IloBoolVarArray> yi(env, deposits);
+    
     for (int i = 0; i < deposits; i++) {
-        serveClient[i] = IloBoolVarArray(env, clients);
+        yi[i] = IloBoolVarArray(env, clients);
     }
   
-    // Restrictions:
-    // Service:
+    // Constraints:
+    // Answering to a client
     for (int j = 0; j < clients; j++) {
         IloExpr serve(env);
 
         for (int i = 0; i < deposits; i++) {
-            serve += serveClient[i][j];
+            serve += yi[i][j];
         }
         
         facilitiesProblem.add(serve == 1);
     }
     
-    // Restrictions:
-    // Installation:
+    // Constraints:
+    // Building a deposit
     for (int i = 0; i < deposits; i++) {
         IloExpr install(env);
         
         for (int j = 0; j < clients; j++) {
-            install += serveClient[i][j];
+            install += yi[i][j];
         }
         
-        facilitiesProblem.add(install <= installDeposits[i] * clients);
+        facilitiesProblem.add(install <= xi[i] * clients);
     }
 
     // Objective Function:
+    // Minimizing both the costs
     IloExpr cost(env);
     
     for (int i = 0; i < deposits; i++) {
-        cost += installationCosts[i] * installDeposits[i];
+        cost += costs_1[i] * xi[i];
+        
         for (int j = 0; j < clients; j++) {
-            cost += serviceCosts[i][j] * serveClient[i][j];
+            cost += costs_2[i][j] * yi[i][j];
         }
     }
     
@@ -70,28 +77,27 @@ int main() {
 
     // Get Solution:
     cplex.solve();
-    printf("minCost: %.3lf\n", cplex.getObjValue());
-    IloNumArray solutionInstall(env, deposits); 
-    cplex.getValues(solutionInstall, installDeposits);
-    IloArray<IloNumArray> solutionServe(env, deposits);
+    cout << "Objective Function: " << cplex.getObjValue() << endl;
     
+    IloNumArray solutionInstall(env, deposits); 
+    cplex.getValues(solutionInstall, xi);
+    IloArray<IloNumArray> solutionServe(env, deposits);
+
+    cout << "Deposits:" << endl;
     for (int i = 0; i < deposits; i++) {
-        solutionServe[i] = IloNumArray(env, clients);
-        cplex.getValues(solutionServe[i], serveClient[i]);
-      
-        if (solutionInstall[i]) {
-            printf("Install deposit %d:\n", i + 1);
-            for (int j = 0; j < clients; j ++) {
-                if (solutionServe[i][j]) {
-                    printf("\tServe client %d\n", j + 1);
-                }
-            }
+        cout << "x" << i << " -> " << cplex.getValue(xi[i]) << endl;
+    }
+
+    cout << "Clients:" << endl;
+    for (int i = 0; i < deposits; i++) {
+        for (int j = 0; j < clients; j++) {
+            cout << "x" << i << j << " -> " << cplex.getValue(yi[i][j]) << endl;
         }
     }
 
     // End
     cplex.end();
-    paintProblem.end();
+    facilitiesProblem.end();
     env.end();
 
 }

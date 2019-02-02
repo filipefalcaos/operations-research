@@ -2,7 +2,7 @@
 #include <ilcplex/ilocplex.h>
 using namespace std;
 
-// 2D Matrix of variables
+// 2D Matrix of numerical variables
 typedef IloArray<IloNumVarArray> NumVarMatrix;
 
 int main() {
@@ -12,6 +12,7 @@ int main() {
     IloCplex cplex(farmProblem);
 
     // Statement Data:
+    // Data provided by the problem
     const int n_farms = 3, n_plantations = 3;
     double area[n_farms] = {400, 650, 350};
     double max_area[n_farms] = {660, 880, 400};
@@ -29,8 +30,8 @@ int main() {
         }
     }
 
-    // Restrictions:
-    // Area/Plantation:
+    // Constraints:
+    // Area/Plantation
     for (int i = 0; i < n_plantations; i++) {
         IloExpr constraint_area(env);
 
@@ -41,8 +42,8 @@ int main() {
         farmProblem.add(constraint_area <= max_area[i]);
     }
 
-    // Restrictions:
-    // Water/Farm:
+    // Constraints:
+    // Water/Farm
     for (int i = 0; i < n_farms; i++) {
         IloExpr constraint_water(env);
 
@@ -53,8 +54,8 @@ int main() {
         farmProblem.add(constraint_water <= water[i]);
     }
 
-    // Restrictions:
-    // Area/Farm:
+    // Constraints:
+    // Area/Farm
     for (int i = 0; i < n_farms; i++) {
         IloExpr constraint_area2(env);
 
@@ -65,7 +66,7 @@ int main() {
         farmProblem.add(constraint_area2 <= area[i]);
     }
 
-    // Restrictions:
+    // Constraints:
     // Proportion:
     IloExprArray prop_constraints(env, n_farms);
     
@@ -79,10 +80,12 @@ int main() {
         prop_constraints[i] = constraint_prop / area[i];
     }
     
+    // Constraints:
     // Proportion equality
     farmProblem.add(prop_constraints[0] == prop_constraints[1] == prop_constraints[2]);
 
     // Objective Function:
+    // Maximize the profit
     IloExpr objective(env);
         
     for (int i = 0; i < n_plantations; i++) {
